@@ -114,54 +114,106 @@ export function FormStep({ initialData, onSubmit, onFileParse }: FormStepProps) 
             <CardContent>
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                  <FormField control={form.control} name="clientName" render={({ field }) => ( <FormItem> <FormLabel>Nome do Cliente</FormLabel> <FormControl> <Input placeholder="Ex: Restaurante Sabor Divino" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
-                  <FormField control={form.control} name="segment" render={({ field }) => ( <FormItem> <FormLabel>Segmento</FormLabel> <FormControl> <Input placeholder="Ex: Gastronomia Premium, Pizzaria" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
-                  <FormField control={form.control} name="monthlyBudget" render={({ field }) => ( <FormItem> <FormLabel>Orçamento Mensal (R$)</FormLabel> <FormControl> <Input type="number" {...field} /> </FormControl> <FormDescription>Orçamento diário: {formatCurrency(dailyBudget)}</FormDescription> <FormMessage /> </FormItem> )} />
-                  <FormField control={form.control} name="goals" render={({ field }) => ( <FormItem> <FormLabel>Objetivos Principais</FormLabel> <FormControl> <Textarea placeholder="Ex: Aumentar as reservas em 20%, fortalecer a presença online." {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
-                  <FormField control={form.control} name="notes" render={({ field }) => ( <FormItem> <FormLabel>Notas Adicionais</FormLabel> <FormControl> <Textarea placeholder="Ex: Focar em público local, promoções de terça-feira." {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
+                  <FormField
+                    control={form.control}
+                    name="clientName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nome do Cliente</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Ex: Restaurante Sabor Divino" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="segment"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Segmento</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Ex: Gastronomia Premium, Pizzaria" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="monthlyBudget"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Orçamento Mensal (R$)</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} />
+                        </FormControl>
+                        <FormDescription>Orçamento diário: {formatCurrency(dailyBudget)}</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="goals"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Objetivos Principais</FormLabel>
+                        <FormControl>
+                          <Textarea placeholder="Ex: Aumentar as reservas em 20%, fortalecer a presença online." {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="notes"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Notas Adicionais</FormLabel>
+                        <FormControl>
+                          <Textarea placeholder="Ex: Focar em público local, promoções de terça-feira." {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                   
                   <FormField
                     control={form.control}
                     name="platforms"
-                    render={() => (
+                    render={({ field }) => (
                       <FormItem>
                         <div className="mb-4">
                           <FormLabel className="text-base">Plataformas</FormLabel>
                           <FormDescription>Selecione onde as campanhas serão veiculadas.</FormDescription>
                         </div>
                         <div className="flex items-center space-x-6">
-                          {['Meta', 'Google'].map((platform) => (
-                             <FormField
-                              key={platform}
-                              control={form.control}
-                              name="platforms"
-                              render={({ field }) => {
-                                return (
-                                  <FormItem
-                                    key={platform}
-                                    className="flex flex-row items-start space-x-3 space-y-0"
-                                  >
-                                    <FormControl>
-                                      <Checkbox
-                                        checked={field.value?.includes(platform)}
-                                        onCheckedChange={(checked) => {
-                                          return checked
-                                            ? field.onChange([...(field.value || []), platform])
-                                            : field.onChange(
-                                                field.value?.filter(
-                                                  (value) => value !== platform
-                                                )
-                                              )
-                                        }}
-                                      />
-                                    </FormControl>
-                                    <FormLabel className="font-normal">
-                                      {platform}
-                                    </FormLabel>
-                                  </FormItem>
-                                )
-                              }}
-                            />
+                          {['Meta', 'Google'].map((item) => (
+                            <FormItem
+                              key={item}
+                              className="flex flex-row items-start space-x-3 space-y-0"
+                            >
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value?.includes(item)}
+                                  onCheckedChange={(checked) => {
+                                    return checked
+                                      ? field.onChange([...(field.value || []), item])
+                                      : field.onChange(
+                                          (field.value || []).filter(
+                                            (value) => value !== item
+                                          )
+                                        );
+                                  }}
+                                />
+                              </FormControl>
+                              <FormLabel className="font-normal">
+                                {item}
+                              </FormLabel>
+                            </FormItem>
                           ))}
                         </div>
                          <FormMessage />
