@@ -78,9 +78,9 @@ export type KPI = z.infer<typeof KPISchema>;
 const PlanSchema = z.object({
   id: z.string().describe('ID único do plano'),
   summary: PlanSummarySchema,
-  campaigns: z.array(CampaignSchema).describe('Array de campanhas'),
-  strategy_notes: z.array(z.string()).describe('Notas estratégicas'),
-  kpis: z.array(KPISchema).describe('Array de KPIs'),
+  campaigns: z.array(CampaignSchema).describe('Array de campanhas').optional(),
+  strategy_notes: z.array(z.string()).describe('Notas estratégicas').optional(),
+  kpis: z.array(KPISchema).describe('Array de KPIs').optional(),
   createdAt: z.string().describe('Data de criação (ISO 8601 string)'),
   updatedAt: z.string().describe('Data de atualização (ISO 8601 string)'),
   clientId: z.string().optional().describe('ID do cliente (opcional)'),
@@ -155,9 +155,12 @@ const generateStrategicPlanFlow = ai.defineFlow(
       throw new Error('Failed to generate strategic plan.');
     }
 
-    // Ensure createdAt and updatedAt are set, as the prompt might not strictly follow the format for these.
+    // Ensure fields are set, as the prompt might not strictly follow the format for these.
     return {
       ...output,
+      campaigns: output.campaigns || [],
+      strategy_notes: output.strategy_notes || [],
+      kpis: output.kpis || [],
       createdAt: output.createdAt || now,
       updatedAt: output.updatedAt || now,
     };
