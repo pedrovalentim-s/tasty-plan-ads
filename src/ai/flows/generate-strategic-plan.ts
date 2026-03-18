@@ -81,8 +81,8 @@ const PlanSchema = z.object({
   campaigns: z.array(CampaignSchema).describe('Array de campanhas').optional(),
   strategy_notes: z.array(z.string()).describe('Notas estratégicas').optional(),
   kpis: z.array(KPISchema).describe('Array de KPIs').optional(),
-  createdAt: z.string().describe('Data de criação (ISO 8601 string)'),
-  updatedAt: z.string().describe('Data de atualização (ISO 8601 string)'),
+  createdAt: z.string().describe('Data de criação (ISO 8601 string)').optional(),
+  updatedAt: z.string().describe('Data de atualização (ISO 8601 string)').optional(),
   clientId: z.string().optional().describe('ID do cliente (opcional)'),
 });
 export type Plan = z.infer<typeof PlanSchema>;
