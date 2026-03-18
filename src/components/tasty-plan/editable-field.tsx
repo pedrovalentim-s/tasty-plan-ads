@@ -3,7 +3,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
 import { Edit2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -103,9 +102,13 @@ export function EditableField({
       onClick={() => setIsEditing(true)}
     >
       {finalDisplayValue || <span className="text-muted-foreground/50">Clique para editar</span>}
-      <Button variant="ghost" size="icon" className="absolute top-1/2 right-0 -translate-y-1/2 h-6 w-6 opacity-0 group-hover:opacity-100">
+      <div 
+        role="button"
+        aria-label="Edit field"
+        className="absolute top-1/2 right-0 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-md opacity-0 transition-opacity group-hover:opacity-100 hover:bg-accent hover:text-accent-foreground"
+      >
         <Edit2 size={14} />
-      </Button>
+      </div>
     </div>
   );
 }

@@ -142,9 +142,14 @@ export function PlanCampaigns({ plan, onPlanChange, isPresentation, openCampaign
                                         />
                                     </div>
                                     {!isPresentation && (
-                                        <Button variant="ghost" size="icon" onClick={(e) => {e.stopPropagation(); removeCampaign(campaign.id);}} className="text-muted-foreground hover:text-destructive hover:bg-destructive/10">
+                                        <div
+                                            role="button"
+                                            aria-label="Remove campaign"
+                                            onClick={(e) => { e.stopPropagation(); removeCampaign(campaign.id); }}
+                                            className="p-2 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                        >
                                             <Trash2 size={18} />
-                                        </Button>
+                                        </div>
                                     )}
                                 </div>
                             </AccordionTrigger>
