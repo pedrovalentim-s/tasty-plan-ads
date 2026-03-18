@@ -37,7 +37,7 @@ export async function parseBriefing(input: ParseBriefingInput): Promise<ParseBri
 const parseBriefingPrompt = ai.definePrompt({
   name: 'parseBriefingPrompt',
   input: { schema: ParseBriefingInputSchema },
-  output: { schema: ParseBriefingOutputSchema },
+  // output: { schema: ParseBriefingOutputSchema }, // REMOVED to avoid responseMimeType issue
   prompt: `Você é um especialista em planejamento estratégico de mídia digital para restaurantes.
 
 Analise o briefing do cliente abaixo e EXTRAIA APENAS as seguintes informações estruturadas em JSON:
@@ -71,7 +71,20 @@ const parseBriefingFlow = ai.defineFlow(
     outputSchema: ParseBriefingOutputSchema,
   },
   async (input) => {
-    const { output } = await parseBriefingPrompt(input);
-    return output!;
+    const response = await parseBriefingPrompt(input);
+    const jsonString = response.text;
+
+    if (!jsonString) {
+      throw new Error('A IA não retornou uma resposta para o briefing.');
+    }
+    
+    try {
+      // The model sometimes wraps the JSON in ```json ... ```
+      const cleanedJsonString = jsonString.replace(/^```json\s*/, '').replace(/\s*```$/, '').trim();
+      return JSON.parse(cleanedJsonString);
+    } catch (e) {
+      console.error("Falha ao analisar JSON do briefing:", jsonString, e);
+      throw new Error("A resposta da IA para o briefing não era um JSON válido.");
+    }
   }
 );

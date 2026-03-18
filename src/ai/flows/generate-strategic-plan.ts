@@ -16,8 +16,8 @@ const AudienceSchema = z.object({
   type: z.string().describe('Ex: "Personalizado", "Lookalike"'),
   description: z.string().describe('Descrição do público-alvo'),
   location: z.string().describe('Localização geográfica'),
-  interests: z.array(z.string()).describe('Array de interesses').optional(),
-  exclusions: z.string().describe('Exclusões demográficas').optional(),
+  interests: z.array(z.string()).optional().describe('Array de interesses'),
+  exclusions: z.string().optional().describe('Exclusões demográficas'),
 });
 export type Audience = z.infer<typeof AudienceSchema>;
 
@@ -34,10 +34,10 @@ const AdSetSchema = z.object({
   name: z.string().describe('Nome do ad set'),
   objective: z.string().describe('Objetivo do ad set (ex: "Tráfego")'),
   audience: AudienceSchema,
-  placements: z.array(z.string()).describe('Posicionamentos (Feed, Stories, etc)').optional(),
-  schedule: z.string().describe('Agendamento (ex: "Contínuo", "Datas específicas")').optional(),
-  cta: z.string().describe('Call-to-action (ex: "Saiba Mais")').optional(),
-  link: z.string().describe('URL de destino').optional(),
+  placements: z.array(z.string()).optional().describe('Posicionamentos (Feed, Stories, etc)'),
+  schedule: z.string().optional().describe('Agendamento (ex: "Contínuo", "Datas específicas")'),
+  cta: z.string().optional().describe('Call-to-action (ex: "Saiba Mais")'),
+  link: z.string().optional().describe('URL de destino'),
   creatives: CreativesSchema.optional(),
 });
 export type AdSet = z.infer<typeof AdSetSchema>;
@@ -78,11 +78,11 @@ export type KPI = z.infer<typeof KPISchema>;
 const PlanSchema = z.object({
   id: z.string().describe('ID único do plano'),
   summary: PlanSummarySchema,
-  campaigns: z.array(CampaignSchema).describe('Array de campanhas'),
-  strategy_notes: z.array(z.string()).describe('Notas estratégicas'),
-  kpis: z.array(KPISchema).describe('Array de KPIs'),
-  createdAt: z.string().describe('Data de criação (ISO 8601 string)').optional(),
-  updatedAt: z.string().describe('Data de atualização (ISO 8601 string)').optional(),
+  campaigns: z.array(CampaignSchema).optional().describe('Array de campanhas'),
+  strategy_notes: z.array(z.string()).optional().describe('Notas estratégicas'),
+  kpis: z.array(KPISchema).optional().describe('Array de KPIs'),
+  createdAt: z.string().optional().describe('Data de criação (ISO 8601 string)'),
+  updatedAt: z.string().optional().describe('Data de atualização (ISO 8601 string)'),
   clientId: z.string().optional().describe('ID do cliente (opcional)'),
 });
 export type Plan = z.infer<typeof PlanSchema>;
@@ -117,9 +117,7 @@ const generateStrategicPlanPrompt = ai.definePrompt({
   input: {
     schema: GeneratePlanPromptInputSchema
   },
-  output: {
-    schema: PlanSchema
-  },
+  // output: { schema: PlanSchema }, // REMOVED to avoid responseMimeType issue
   config: {
     temperature: 0.8,
     maxOutputTokens: 8000,
@@ -136,7 +134,7 @@ const generateStrategicPlanFlow = ai.defineFlow(
   async (input) => {
     const monthlyBudgetNum = input.monthlyBudget;
     const dailyBudget = monthlyBudgetNum / 30;
-    const platformsString = input.platforms.map(p => `"${p}"`).join(', '); // Enclose each platform in quotes for JSON array
+    const platformsString = input.platforms.map(p => `"${p}"`).join(', ');
 
     const promptInput: GeneratePlanPromptInput = {
       clientName: input.clientName,
@@ -148,10 +146,21 @@ const generateStrategicPlanFlow = ai.defineFlow(
       notes: input.notes,
     };
 
-    const {output} = await generateStrategicPlanPrompt(promptInput);
+    const response = await generateStrategicPlanPrompt(promptInput);
+    const jsonString = response.text;
 
-    if (!output) {
-      throw new Error('Failed to generate strategic plan.');
+    if (!jsonString) {
+      throw new Error('A IA não retornou uma resposta para o plano.');
+    }
+
+    let output: Plan;
+    try {
+      // The model sometimes wraps the JSON in ```json ... ```
+      const cleanedJsonString = jsonString.replace(/^```json\s*/, '').replace(/\s*```$/, '').trim();
+      output = JSON.parse(cleanedJsonString);
+    } catch (e) {
+      console.error("Falha ao analisar JSON do plano:", jsonString, e);
+      throw new Error("A resposta da IA para o plano estratégico não era um JSON válido.");
     }
     
     const now = new Date().toISOString();
@@ -176,6 +185,7 @@ const generateStrategicPlanFlow = ai.defineFlow(
     // Ensure fields are set, as the prompt might not strictly follow the format for these.
     return {
       ...output,
+      id: output.id || crypto.randomUUID(),
       campaigns: processedCampaigns,
       strategy_notes: output.strategy_notes || [],
       kpis: output.kpis || [],
