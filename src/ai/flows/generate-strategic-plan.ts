@@ -78,9 +78,9 @@ export type KPI = z.infer<typeof KPISchema>;
 const PlanSchema = z.object({
   id: z.string().describe('ID único do plano'),
   summary: PlanSummarySchema,
-  campaigns: z.array(CampaignSchema).describe('Array de campanhas'),
-  strategy_notes: z.array(z.string()).describe('Notas estratégicas'),
-  kpis: z.array(KPISchema).describe('Array de KPIs'),
+  campaigns: z.array(CampaignSchema).optional().describe('Array de campanhas'),
+  strategy_notes: z.array(z.string()).optional().describe('Notas estratégicas'),
+  kpis: z.array(KPISchema).optional().describe('Array de KPIs'),
   createdAt: z.string().describe('Data de criação (ISO 8601 string)').optional(),
   updatedAt: z.string().describe('Data de atualização (ISO 8601 string)').optional(),
   clientId: z.string().optional().describe('ID do cliente (opcional)'),
