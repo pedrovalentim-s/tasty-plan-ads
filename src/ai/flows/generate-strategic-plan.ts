@@ -17,7 +17,7 @@ const AudienceSchema = z.object({
   description: z.string().describe('Descrição do público-alvo'),
   location: z.string().describe('Localização geográfica'),
   interests: z.array(z.string()).describe('Array de interesses'),
-  exclusions: z.string().describe('Exclusões demográficas'),
+  exclusions: z.string().describe('Exclusões demográficas').optional(),
 });
 export type Audience = z.infer<typeof AudienceSchema>;
 
@@ -34,11 +34,11 @@ const AdSetSchema = z.object({
   name: z.string().describe('Nome do ad set'),
   objective: z.string().describe('Objetivo do ad set (ex: "Tráfego")'),
   audience: AudienceSchema,
-  placements: z.array(z.string()).describe('Posicionamentos (Feed, Stories, etc)'),
-  schedule: z.string().describe('Agendamento (ex: "Contínuo", "Datas específicas")'),
-  cta: z.string().describe('Call-to-action (ex: "Saiba Mais")'),
-  link: z.string().describe('URL de destino'),
-  creatives: CreativesSchema,
+  placements: z.array(z.string()).describe('Posicionamentos (Feed, Stories, etc)').optional(),
+  schedule: z.string().describe('Agendamento (ex: "Contínuo", "Datas específicas")').optional(),
+  cta: z.string().describe('Call-to-action (ex: "Saiba Mais")').optional(),
+  link: z.string().describe('URL de destino').optional(),
+  creatives: CreativesSchema.optional(),
 });
 export type AdSet = z.infer<typeof AdSetSchema>;
 
@@ -137,7 +137,6 @@ const generateStrategicPlanFlow = ai.defineFlow(
     const monthlyBudgetNum = input.monthlyBudget;
     const dailyBudget = monthlyBudgetNum / 30;
     const platformsString = input.platforms.map(p => `"${p}"`).join(', '); // Enclose each platform in quotes for JSON array
-    const now = new Date().toISOString();
 
     const promptInput: GeneratePlanPromptInput = {
       clientName: input.clientName,
@@ -154,11 +153,30 @@ const generateStrategicPlanFlow = ai.defineFlow(
     if (!output) {
       throw new Error('Failed to generate strategic plan.');
     }
+    
+    const now = new Date().toISOString();
+
+    const processedCampaigns = (output.campaigns || []).map(campaign => ({
+      ...campaign,
+      adSets: (campaign.adSets || []).map(adSet => ({
+        ...adSet,
+        placements: adSet.placements || [],
+        schedule: adSet.schedule || 'Contínuo',
+        cta: adSet.cta || 'Saiba Mais',
+        link: adSet.link || '',
+        creatives: adSet.creatives || { format: 'Imagem/Vídeo', suggestions: [] },
+        audience: {
+          ...adSet.audience,
+          interests: adSet.audience.interests || [],
+          exclusions: adSet.audience.exclusions || '',
+        }
+      }))
+    }));
 
     // Ensure fields are set, as the prompt might not strictly follow the format for these.
     return {
       ...output,
-      campaigns: output.campaigns || [],
+      campaigns: processedCampaigns,
       strategy_notes: output.strategy_notes || [],
       kpis: output.kpis || [],
       createdAt: output.createdAt || now,
