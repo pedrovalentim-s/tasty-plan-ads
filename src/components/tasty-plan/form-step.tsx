@@ -184,7 +184,7 @@ export function FormStep({ initialData, onSubmit, onFileParse }: FormStepProps) 
                   <FormField
                     control={form.control}
                     name="platforms"
-                    render={({ field }) => (
+                    render={() => (
                       <FormItem>
                         <div className="mb-4">
                           <FormLabel className="text-base">Plataformas</FormLabel>
@@ -192,31 +192,37 @@ export function FormStep({ initialData, onSubmit, onFileParse }: FormStepProps) 
                         </div>
                         <div className="flex items-center space-x-6">
                           {['Meta', 'Google'].map((item) => (
-                            <FormItem
+                            <FormField
                               key={item}
-                              className="flex flex-row items-start space-x-3 space-y-0"
-                            >
-                              <FormControl>
-                                <Checkbox
-                                  checked={field.value?.includes(item)}
-                                  onCheckedChange={(checked) => {
-                                    return checked
-                                      ? field.onChange([...(field.value || []), item])
-                                      : field.onChange(
-                                          (field.value || []).filter(
-                                            (value) => value !== item
-                                          )
-                                        );
-                                  }}
-                                />
-                              </FormControl>
-                              <FormLabel className="font-normal">
-                                {item}
-                              </FormLabel>
-                            </FormItem>
+                              control={form.control}
+                              name="platforms"
+                              render={({ field }) => (
+                                <FormItem
+                                  key={item}
+                                  className="flex flex-row items-start space-x-3 space-y-0"
+                                >
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={field.value?.includes(item)}
+                                      onCheckedChange={(checked) => {
+                                        const newValue = checked
+                                          ? [...(field.value || []), item]
+                                          : (field.value || []).filter(
+                                              (value) => value !== item
+                                            );
+                                        field.onChange(newValue);
+                                      }}
+                                    />
+                                  </FormControl>
+                                  <FormLabel className="font-normal">
+                                    {item}
+                                  </FormLabel>
+                                </FormItem>
+                              )}
+                            />
                           ))}
                         </div>
-                         <FormMessage />
+                        <FormMessage />
                       </FormItem>
                     )}
                   />
