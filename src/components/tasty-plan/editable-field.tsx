@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 
 interface EditableFieldProps {
   value: string | number;
+  displayValue?: string;
   onSave: (value: string | number) => void;
   isPresentation: boolean;
   className?: string;
@@ -21,6 +22,7 @@ interface EditableFieldProps {
 
 export function EditableField({
   value,
+  displayValue,
   onSave,
   isPresentation,
   className,
@@ -70,8 +72,12 @@ export function EditableField({
     }
   };
 
+  const finalDisplayValue = displayValue !== undefined 
+    ? displayValue 
+    : `${prefix || ''}${String(value)}${suffix || ''}`;
+
   if (isPresentation || !onSave) {
-    return <div className={cn("py-1", className)}>{prefix}{String(value)}{suffix}</div>;
+    return <div className={cn("py-1", className)}>{finalDisplayValue}</div>;
   }
 
   if (isEditing) {
@@ -96,7 +102,7 @@ export function EditableField({
       className={cn("group relative cursor-pointer rounded-md hover:bg-primary/10 p-1 -m-1 transition-colors", className)}
       onClick={() => setIsEditing(true)}
     >
-      {prefix}{String(value) || <span className="text-muted-foreground/50">Clique para editar</span>}{suffix}
+      {finalDisplayValue || <span className="text-muted-foreground/50">Clique para editar</span>}
       <Button variant="ghost" size="icon" className="absolute top-1/2 right-0 -translate-y-1/2 h-6 w-6 opacity-0 group-hover:opacity-100">
         <Edit2 size={14} />
       </Button>

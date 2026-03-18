@@ -32,6 +32,23 @@ export function PlanCampaigns({ plan, onPlanChange, isPresentation, openCampaign
         onPlanChange(newPlan);
     };
 
+    const handleBudgetChange = (campaignIndex: number, field: 'dailyBudget' | 'monthlyBudget', value: number) => {
+        const newPlan = JSON.parse(JSON.stringify(plan));
+        const campaign = newPlan.campaigns[campaignIndex];
+
+        if (isNaN(value) || value < 0) return;
+
+        if (field === 'monthlyBudget') {
+            campaign.monthlyBudget = value;
+            campaign.dailyBudget = parseFloat((value / 30).toFixed(2));
+        } else { // field === 'dailyBudget'
+            campaign.dailyBudget = value;
+            campaign.monthlyBudget = parseFloat((value * 30).toFixed(2));
+        }
+        
+        onPlanChange(newPlan);
+    };
+
     const addCampaign = (platform: 'Meta' | 'Google') => {
         const newCampaign: Campaign = {
             id: crypto.randomUUID(),
@@ -105,8 +122,24 @@ export function PlanCampaigns({ plan, onPlanChange, isPresentation, openCampaign
                                         />
                                     </div>
                                     <div className="text-right">
-                                        <div className="font-bold">{formatCurrency(campaign.dailyBudget)}/dia</div>
-                                        <div className="text-sm text-muted-foreground">{formatCurrency(campaign.monthlyBudget)}/mês</div>
+                                        <EditableField
+                                            value={campaign.dailyBudget}
+                                            displayValue={`${formatCurrency(campaign.dailyBudget)}/dia`}
+                                            onSave={(v) => handleBudgetChange(cIndex, 'dailyBudget', Number(v))}
+                                            isPresentation={isPresentation}
+                                            type="number"
+                                            className="font-bold text-lg text-right"
+                                            inputClassName="text-right"
+                                        />
+                                        <EditableField
+                                            value={campaign.monthlyBudget}
+                                            displayValue={`${formatCurrency(campaign.monthlyBudget)}/mês`}
+                                            onSave={(v) => handleBudgetChange(cIndex, 'monthlyBudget', Number(v))}
+                                            isPresentation={isPresentation}
+                                            type="number"
+                                            className="text-sm text-muted-foreground text-right"
+                                            inputClassName="text-right"
+                                        />
                                     </div>
                                     {!isPresentation && (
                                         <Button variant="ghost" size="icon" onClick={(e) => {e.stopPropagation(); removeCampaign(campaign.id);}} className="text-muted-foreground hover:text-destructive hover:bg-destructive/10">

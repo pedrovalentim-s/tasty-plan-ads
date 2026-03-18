@@ -87,7 +87,7 @@ export function PlanStep({ plan: initialPlan, onPlanChange, onBack }: PlanStepPr
         <PlanSummary summary={plan.summary} campaigns={plan.campaigns} onRecalculate={recalculateSummary} onFieldChange={handleFieldChange} isPresentation={isPresentation} />
 
         <section className="mt-10">
-          <div className="bg-card p-6 rounded-lg shadow-sm">
+          <div className="bg-card p-6 rounded-lg border">
             <h2 className="flex items-center gap-2 font-headline text-2xl font-bold mb-4">
                 <Target className="text-primary" /> Objetivo Principal
             </h2>
