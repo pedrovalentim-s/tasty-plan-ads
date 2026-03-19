@@ -3,30 +3,15 @@
  * @fileOverview A Genkit flow for parsing client briefing documents.
  *
  * - parseBriefing - A function that handles the parsing of a briefing document.
- * - ParseBriefingInput - The input type for the parseBriefing function.
- * - ParseBriefingOutput - The return type for the parseBriefing function.
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
-
-// Input Schema
-const ParseBriefingInputSchema = z.object({
-  fileContent: z.string().describe('The content of the briefing file as a string.'),
-  fileName: z.string().describe('The name of the briefing file (e.g., briefing.docx).'),
-});
-export type ParseBriefingInput = z.infer<typeof ParseBriefingInputSchema>;
-
-// Output Schema
-const ParseBriefingOutputSchema = z.object({
-  clientName: z.string().optional().describe('The name of the client/restaurant.'),
-  segment: z.string().optional().describe('The segment of the business (e.g., Pizzaria, Gastronomia premium).'),
-  monthlyBudget: z.number().optional().describe('The monthly budget in R$.'),
-  goals: z.string().optional().describe('The main goals of the client in 2-3 lines.'),
-  notes: z.string().optional().describe('Additional notes or observations.'),
-  platforms: z.array(z.enum(['Meta', 'Google'])).optional().describe('An array of selected platforms (e.g., ["Meta", "Google"]).'),
-});
-export type ParseBriefingOutput = z.infer<typeof ParseBriefingOutputSchema>;
+import {
+  ParseBriefingInputSchema,
+  type ParseBriefingInput,
+  ParseBriefingOutputSchema,
+  type ParseBriefingOutput
+} from '@/lib/definitions';
 
 // Wrapper function
 export async function parseBriefing(input: ParseBriefingInput): Promise<ParseBriefingOutput> {

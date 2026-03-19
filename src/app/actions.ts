@@ -1,8 +1,8 @@
 "use server";
 
 import { generateStrategicPlan as generateStrategicPlanFlow } from '@/ai/flows/generate-strategic-plan';
-import { parseBriefing as parseBriefingFlow, type ParseBriefingOutput } from '@/ai/flows/parse-briefing';
-import type { Plan, FormData } from '@/lib/definitions';
+import { parseBriefing as parseBriefingFlow } from '@/ai/flows/parse-briefing';
+import type { Plan, FormData, ParseBriefingOutput } from '@/lib/definitions';
 import mammoth from 'mammoth';
 
 export async function parseBriefingAction(file: File): Promise<ParseBriefingOutput> {

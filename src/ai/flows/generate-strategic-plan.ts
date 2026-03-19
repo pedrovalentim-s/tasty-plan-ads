@@ -4,100 +4,18 @@
  * based on client input, including campaigns, ad sets, audience targeting, creative suggestions, and KPIs.
  *
  * - generateStrategicPlan - A function that handles the strategic plan generation process.
- * - GenerateStrategicPlanInput - The input type for the generateStrategicPlan function.
- * - GenerateStrategicPlanOutput - The return type for the generateStrategicPlan function.
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { 
+  GenerateStrategicPlanInputSchema,
+  type GenerateStrategicPlanInput,
+  PlanSchema,
+  type GenerateStrategicPlanOutput,
+  type Plan,
+} from '@/lib/definitions';
 
-// Audiência do Ad Set
-const AudienceSchema = z.object({
-  type: z.string().describe('Ex: "Personalizado", "Lookalike"'),
-  description: z.string().describe('Descrição do público-alvo'),
-  location: z.string().describe('Localização geográfica'),
-  interests: z.array(z.string()).optional().describe('Array de interesses'),
-  exclusions: z.string().optional().describe('Exclusões demográficas'),
-});
-export type Audience = z.infer<typeof AudienceSchema>;
-
-// Criativos/Sugestões
-const CreativesSchema = z.object({
-  format: z.string().describe('Ex: "Imagem/Vídeo", "Carrossel"'),
-  suggestions: z.array(z.string()).describe('Array de sugestões de criativo'),
-});
-export type Creatives = z.infer<typeof CreativesSchema>;
-
-// Conjunto de Anúncios (Ad Set)
-const AdSetSchema = z.object({
-  id: z.string().describe('ID único (UUID)'),
-  name: z.string().describe('Nome do ad set'),
-  objective: z.string().describe('Objetivo do ad set (ex: "Tráfego")'),
-  audience: AudienceSchema,
-  placements: z.array(z.string()).optional().describe('Posicionamentos (Feed, Stories, etc)'),
-  schedule: z.string().optional().describe('Agendamento (ex: "Contínuo", "Datas específicas")'),
-  cta: z.string().optional().describe('Call-to-action (ex: "Saiba Mais")'),
-  link: z.string().optional().describe('URL de destino'),
-  creatives: CreativesSchema.optional(),
-});
-export type AdSet = z.infer<typeof AdSetSchema>;
-
-// Campanha
-const CampaignSchema = z.object({
-  id: z.string().describe('ID único (UUID)'),
-  platform: z.string().describe('"Meta" ou "Google"'),
-  type: z.string().describe('Tipo de campanha (ex: "Tráfego")'),
-  objective: z.string().describe('Objetivo geral da campanha'),
-  name: z.string().describe('Nome da campanha'),
-  dailyBudget: z.number().describe('Orçamento diário (R$)'),
-  monthlyBudget: z.number().describe('Orçamento mensal (R$)'),
-  adSets: z.array(AdSetSchema).describe('Array de conjuntos de anúncios'),
-});
-export type Campaign = z.infer<typeof CampaignSchema>;
-
-// Resumo do Plano
-const PlanSummarySchema = z.object({
-  clientName: z.string().describe('Nome do cliente/restaurante'),
-  segment: z.string().describe('Segmento (ex: "Gastronomia premium")'),
-  monthlyBudget: z.number().describe('Orçamento total mensal'),
-  dailyBudget: z.number().describe('Orçamento total diário'),
-  platforms: z.array(z.string()).describe('Plataformas selecionadas'),
-  period: z.string().describe('Período do plano'),
-  mainObjective: z.string().describe('Objetivo principal do plano'),
-});
-export type PlanSummary = z.infer<typeof PlanSummarySchema>;
-
-// KPI
-const KPISchema = z.object({
-  name: z.string().describe('Nome do KPI'),
-  target: z.string().describe('Meta do KPI'),
-});
-export type KPI = z.infer<typeof KPISchema>;
-
-// Plano Completo
-const PlanSchema = z.object({
-  id: z.string().describe('ID único do plano'),
-  summary: PlanSummarySchema,
-  campaigns: z.array(CampaignSchema).optional().describe('Array de campanhas'),
-  strategy_notes: z.array(z.string()).optional().describe('Notas estratégicas'),
-  kpis: z.array(KPISchema).optional().describe('Array de KPIs'),
-  createdAt: z.string().optional().describe('Data de criação (ISO 8601 string)'),
-  updatedAt: z.string().optional().describe('Data de atualização (ISO 8601 string)'),
-  clientId: z.string().optional().describe('ID do cliente (opcional)'),
-});
-export type Plan = z.infer<typeof PlanSchema>;
-
-// Formulário de entrada (as received from the frontend/Firebase Function)
-const GenerateStrategicPlanInputSchema = z.object({
-  clientName: z.string().describe('Nome do cliente'),
-  segment: z.string().describe('Segmento (ex: "Gastronomia premium")'),
-  monthlyBudget: z.number().describe('Orçamento mensal em R$'),
-  goals: z.string().describe('Objetivos principais do cliente'),
-  notes: z.string().describe('Observações adicionais'),
-  platforms: z.array(z.string()).describe('Plataformas selecionadas (Meta, Google)'),
-});
-export type GenerateStrategicPlanInput = z.infer<typeof GenerateStrategicPlanInputSchema>;
-export type GenerateStrategicPlanOutput = Plan; // Output is the Plan object
 
 // Helper type for the prompt input, including calculated dailyBudget and joined platforms
 const GeneratePlanPromptInputSchema = z.object({
