@@ -1,10 +1,4 @@
 'use server';
-/**
- * @fileOverview A Genkit flow for generating a comprehensive digital media strategic plan
- * based on client input, including campaigns, ad sets, audience targeting, creative suggestions, and KPIs.
- *
- * - generateStrategicPlan - A function that handles the strategic plan generation process.
- */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'zod';
@@ -35,7 +29,7 @@ const generateStrategicPlanPrompt = ai.definePrompt({
     schema: GeneratePlanPromptInputSchema
   },
   output: { schema: PlanSchema },
-  model: 'gemini-pro',
+  model: 'googleai/gemini-pro',
   config: {
     temperature: 0.8,
     maxOutputTokens: 8000,
