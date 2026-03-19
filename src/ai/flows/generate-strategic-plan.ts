@@ -7,7 +7,7 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import {z} from 'zod';
 import { 
   GenerateStrategicPlanInputSchema,
   type GenerateStrategicPlanInput,
@@ -35,7 +35,7 @@ const generateStrategicPlanPrompt = ai.definePrompt({
   input: {
     schema: GeneratePlanPromptInputSchema
   },
-  // output: { schema: PlanSchema }, // REMOVED to avoid responseMimeType issue
+  output: { schema: PlanSchema },
   config: {
     temperature: 0.8,
     maxOutputTokens: 8000,
@@ -64,23 +64,12 @@ const generateStrategicPlanFlow = ai.defineFlow(
       notes: input.notes,
     };
 
-    const response = await generateStrategicPlanPrompt(promptInput);
-    const jsonString = response.text;
+    const { output } = await generateStrategicPlanPrompt(promptInput);
 
-    if (!jsonString) {
+    if (!output) {
       throw new Error('A IA não retornou uma resposta para o plano.');
     }
 
-    let output: Plan;
-    try {
-      // The model sometimes wraps the JSON in ```json ... ```
-      const cleanedJsonString = jsonString.replace(/^```json\s*/, '').replace(/\s*```$/, '').trim();
-      output = JSON.parse(cleanedJsonString);
-    } catch (e) {
-      console.error("Falha ao analisar JSON do plano:", jsonString, e);
-      throw new Error("A resposta da IA para o plano estratégico não era um JSON válido.");
-    }
-    
     const now = new Date().toISOString();
 
     const processedCampaigns = (output.campaigns || []).map(campaign => ({
