@@ -13,7 +13,6 @@ import {
   type GenerateStrategicPlanInput,
   PlanSchema,
   type GenerateStrategicPlanOutput,
-  type Plan,
 } from '@/lib/definitions';
 
 
@@ -36,6 +35,7 @@ const generateStrategicPlanPrompt = ai.definePrompt({
     schema: GeneratePlanPromptInputSchema
   },
   output: { schema: PlanSchema },
+  model: 'gemini-pro',
   config: {
     temperature: 0.8,
     maxOutputTokens: 8000,

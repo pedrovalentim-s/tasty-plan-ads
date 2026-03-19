@@ -23,6 +23,7 @@ const parseBriefingPrompt = ai.definePrompt({
   name: 'parseBriefingPrompt',
   input: { schema: ParseBriefingInputSchema },
   output: { schema: ParseBriefingOutputSchema },
+  model: 'gemini-pro',
   prompt: `Você é um especialista em planejamento estratégico de mídia digital para restaurantes.
 
 Analise o briefing do cliente abaixo e EXTRAIA APENAS as seguintes informações estruturadas em JSON:
