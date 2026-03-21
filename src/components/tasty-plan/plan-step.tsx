@@ -71,7 +71,7 @@ export function PlanStep({ plan: initialPlan, onPlanChange, onBack }: PlanStepPr
         <header className="mb-10 text-center">
             <div className="inline-flex items-center gap-2">
                 <Badge variant="outline" className="text-primary border-primary gap-1 pl-2 pr-3">
-                    <Zap size={14} className="text-primary" /> HYPER DIGITAL
+                    <Zap size={14} className="text-primary" /> TASTY MEDIA
                 </Badge>
             </div>
             <h1 className="font-headline text-4xl md:text-5xl font-bold mt-2">Planejamento Estratégico</h1>
@@ -109,7 +109,7 @@ export function PlanStep({ plan: initialPlan, onPlanChange, onBack }: PlanStepPr
         </div>
         
         <footer className="text-center mt-16 text-sm text-muted-foreground">
-            <p>Planejamento gerado por Hyper Digital</p>
+            <p>Planejamento gerado por Tasty Media</p>
         </footer>
 
       </main>

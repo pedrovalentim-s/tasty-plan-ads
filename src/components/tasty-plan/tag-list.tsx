@@ -39,10 +39,10 @@ export function TagList({ title, tags, onTagsChange, isPresentation, variant = '
     <div className={containerClass}>
        {title && variant === 'vertical' && <h5 className="text-xs text-muted-foreground font-semibold">{title}</h5>}
       {tags.map((tag, index) => (
-        <Badge key={index} variant="secondary" className="group text-sm">
-          {tag}
+        <Badge key={index} variant="secondary" className="group text-sm h-auto whitespace-normal text-left py-1.5 pr-7 relative">
+          <span className="break-words w-full">{tag}</span>
           {!isPresentation && (
-            <button onClick={() => handleRemoveTag(index)} className="ml-1 rounded-full opacity-50 group-hover:opacity-100 transition-opacity">
+            <button onClick={() => handleRemoveTag(index)} className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-full opacity-50 group-hover:opacity-100 transition-opacity">
               <X size={12} />
             </button>
           )}

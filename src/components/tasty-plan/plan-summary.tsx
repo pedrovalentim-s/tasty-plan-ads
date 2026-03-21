@@ -41,6 +41,7 @@ export function PlanSummary({ summary, campaigns, onRecalculate, onFieldChange, 
                         {item.field ? (
                             <EditableField
                                 value={item.value}
+                                displayValue={item.format && typeof item.value === 'number' ? item.format(item.value) : undefined}
                                 onSave={(value) => onFieldChange(item.field!, value)}
                                 isPresentation={isPresentation}
                                 type="number"
