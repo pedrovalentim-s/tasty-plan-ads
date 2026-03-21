@@ -5,7 +5,10 @@ import { parseBriefing as parseBriefingFlow } from '@/ai/flows/parse-briefing';
 import type { Plan, FormData, ParseBriefingOutput } from '@/lib/definitions';
 import mammoth from 'mammoth';
 
-export async function parseBriefingAction(file: File): Promise<ParseBriefingOutput> {
+export async function parseBriefingAction(uploadData: globalThis.FormData): Promise<ParseBriefingOutput> {
+  const file = uploadData.get('file') as File;
+  if (!file) throw new Error('Nenhum arquivo enviado para o servidor.');
+  
   let fileContent = '';
   const fileBuffer = Buffer.from(await file.arrayBuffer());
 

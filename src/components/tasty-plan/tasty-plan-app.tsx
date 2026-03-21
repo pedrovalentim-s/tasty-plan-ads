@@ -1,23 +1,22 @@
 "use client";
 
 import { useState } from 'react';
-import type { Plan, FormData } from '@/lib/definitions';
+import type { Plan, FormData as AppFormData, ParseBriefingOutput } from '@/lib/definitions';
 import { FormStep } from './form-step';
 import { LoadingStep } from './loading-step';
 import { PlanStep } from './plan-step';
 import { generateStrategicPlan, parseBriefingAction } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
-import type { ParseBriefingOutput } from '@/ai/flows/parse-briefing';
 
 type Step = 'form' | 'loading' | 'plan';
 
 export function TastyPlanApp() {
   const [step, setStep] = useState<Step>('form');
   const [plan, setPlan] = useState<Plan | null>(null);
-  const [formData, setFormData] = useState<Partial<FormData>>({});
+  const [formData, setFormData] = useState<Partial<AppFormData>>({});
   const { toast } = useToast();
 
-  const handleFormSubmit = async (data: FormData) => {
+  const handleFormSubmit = async (data: AppFormData) => {
     setStep('loading');
     setFormData(data);
     try {
@@ -45,7 +44,9 @@ export function TastyPlanApp() {
 
   const handleFileParse = async (file: File): Promise<ParseBriefingOutput | null> => {
     try {
-      const result = await parseBriefingAction(file);
+      const uploadData = new FormData();
+      uploadData.append('file', file);
+      const result = await parseBriefingAction(uploadData);
       toast({
         title: 'Briefing importado!',
         description: 'O formulário foi preenchido com os dados do arquivo.',

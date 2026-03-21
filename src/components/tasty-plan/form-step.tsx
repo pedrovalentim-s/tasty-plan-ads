@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { FormDataSchema, type FormData } from '@/lib/definitions';
+import { FormDataSchema, type FormData, type ParseBriefingOutput } from '@/lib/definitions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -12,7 +12,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Upload, Wand2, FileText, Utensils, DollarSign, Target } from 'lucide-react';
 import { formatCurrency } from '@/lib/formatters';
-import type { ParseBriefingOutput } from '@/ai/flows/parse-briefing';
 
 interface FormStepProps {
   initialData: Partial<FormData>;
