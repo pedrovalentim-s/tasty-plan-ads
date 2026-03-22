@@ -15,19 +15,22 @@ import { useToast } from '@/hooks/use-toast';
 
 interface PlanStepProps {
   plan: Plan;
-  onPlanChange: (newPlan: Plan) => void;
-  onBack: () => void;
+  onPlanChange?: (newPlan: Plan) => void;
+  onBack?: () => void;
+  forcePresentation?: boolean;
 }
 
-export function PlanStep({ plan: initialPlan, onPlanChange, onBack }: PlanStepProps) {
+export function PlanStep({ plan: initialPlan, onPlanChange, onBack, forcePresentation }: PlanStepProps) {
   const [plan, setPlan] = useState(initialPlan);
-  const [isPresentation, setIsPresentation] = useState(false);
-  const [openCampaigns, setOpenCampaigns] = useState<string[]>(plan.campaigns.map(c => c.id));
+  const [isPresentationState, setIsPresentationState] = useState(false);
+  const isPresentation = forcePresentation || isPresentationState;
+  const setIsPresentation = forcePresentation ? () => {} : setIsPresentationState;
+  const [openCampaigns, setOpenCampaigns] = useState<string[]>((plan.campaigns || []).map(c => c.id));
   const { toast } = useToast();
 
   const handleUpdate = (newPlan: Plan) => {
     setPlan(newPlan);
-    onPlanChange(newPlan);
+    if (onPlanChange) onPlanChange(newPlan);
   };
   
   const handleFieldChange = (path: string, value: any) => {
@@ -42,7 +45,7 @@ export function PlanStep({ plan: initialPlan, onPlanChange, onBack }: PlanStepPr
   };
 
   const recalculateSummary = () => {
-    const monthlyBudget = plan.campaigns.reduce((sum, campaign) => sum + campaign.monthlyBudget, 0);
+    const monthlyBudget = (plan.campaigns || []).reduce((sum, campaign) => sum + campaign.monthlyBudget, 0);
     const dailyBudget = monthlyBudget / 30;
     
     const newPlan = {
@@ -62,11 +65,14 @@ export function PlanStep({ plan: initialPlan, onPlanChange, onBack }: PlanStepPr
 
   return (
     <div className={`bg-background min-h-screen pb-24 ${isPresentation ? 'presentation-mode' : ''}`}>
-      <PlanHeaderToolbar
-        onBack={onBack}
-        isPresentation={isPresentation}
-        setIsPresentation={setIsPresentation}
-      />
+      {!forcePresentation && onBack && (
+        <PlanHeaderToolbar
+          onBack={onBack}
+          isPresentation={isPresentation}
+          setIsPresentation={setIsPresentation}
+          planId={plan.id}
+        />
+      )}
       <main className="container mx-auto max-w-6xl mt-8 px-4">
         <header className="mb-10 text-center">
             <div className="inline-flex items-center gap-2">
@@ -84,7 +90,7 @@ export function PlanStep({ plan: initialPlan, onPlanChange, onBack }: PlanStepPr
             />
         </header>
 
-        <PlanSummary summary={plan.summary} campaigns={plan.campaigns} onRecalculate={recalculateSummary} onFieldChange={handleFieldChange} isPresentation={isPresentation} />
+        <PlanSummary summary={plan.summary} campaigns={plan.campaigns || []} onRecalculate={recalculateSummary} onFieldChange={handleFieldChange} isPresentation={isPresentation} />
 
         <section className="mt-10">
           <div className="bg-card p-6 rounded-lg border">

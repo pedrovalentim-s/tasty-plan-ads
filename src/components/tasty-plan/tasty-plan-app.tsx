@@ -1,20 +1,39 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { Plan, FormData as AppFormData, ParseBriefingOutput } from '@/lib/definitions';
 import { FormStep } from './form-step';
 import { LoadingStep } from './loading-step';
 import { PlanStep } from './plan-step';
 import { generateStrategicPlan, parseBriefingAction } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
+import { createStrategy, updateStrategy } from '@/lib/firebase/firestore';
 
 type Step = 'form' | 'loading' | 'plan';
 
-export function TastyPlanApp() {
-  const [step, setStep] = useState<Step>('form');
-  const [plan, setPlan] = useState<Plan | null>(null);
+interface TastyPlanAppProps {
+  initialPlan?: Plan | null;
+  strategyId?: string;
+}
+
+export function TastyPlanApp({ initialPlan, strategyId }: TastyPlanAppProps) {
+  const [step, setStep] = useState<Step>(initialPlan ? 'plan' : 'form');
+  const [plan, setPlan] = useState<Plan | null>(initialPlan || null);
+  const [currentStrategyId, setCurrentStrategyId] = useState<string | undefined>(strategyId);
   const [formData, setFormData] = useState<Partial<AppFormData>>({});
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (initialPlan) {
+      setPlan(initialPlan);
+      setStep('plan');
+      setCurrentStrategyId(strategyId);
+    } else {
+      setPlan(null);
+      setStep('form');
+      setCurrentStrategyId(undefined);
+    }
+  }, [initialPlan, strategyId]);
 
   const handleFormSubmit = async (data: AppFormData) => {
     setStep('loading');
@@ -22,12 +41,21 @@ export function TastyPlanApp() {
     try {
       const result = await generateStrategicPlan(data);
       if (result) {
+        // Save to Firestore explicitly
+        const id = await createStrategy(result);
+        setCurrentStrategyId(id);
+        result.id = id;
+        
         setPlan(result);
         setStep('plan');
         toast({
           title: 'Sucesso!',
-          description: 'Seu planejamento estratégico foi gerado.',
+          description: 'Seu planejamento estratégico foi gerado e salvo.',
         });
+        // Dispatch custom event to notify sidebar
+        window.dispatchEvent(new Event('strategyListUpdated'));
+        // Update URL to match strategy id smoothly
+        window.history.pushState(null, '', `/strategies/${id}`);
       } else {
         throw new Error('A IA não retornou um plano.');
       }
@@ -68,8 +96,17 @@ export function TastyPlanApp() {
     setStep('form');
   };
 
-  const handlePlanChange = (newPlan: Plan) => {
+  const handlePlanChange = async (newPlan: Plan) => {
     setPlan(newPlan);
+    if (currentStrategyId) {
+      try {
+         await updateStrategy(currentStrategyId, newPlan);
+         // Dispatch list update just in case client name changed
+         window.dispatchEvent(new Event('strategyListUpdated'));
+      } catch (err) {
+         console.error('Failed to auto-save', err);
+      }
+    }
   };
 
   return (

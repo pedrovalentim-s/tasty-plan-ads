@@ -99,7 +99,7 @@ export type PlanSummary = z.infer<typeof PlanSummarySchema>;
 
 export const KPISchema = z.object({
   name: z.string().describe('Nome do KPI'),
-  target: z.string().describe('Meta do KPI'),
+  target: z.string().optional().describe('Meta do KPI'),
 });
 export type KPI = z.infer<typeof KPISchema>;
 

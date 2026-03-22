@@ -15,17 +15,17 @@ interface PlanKPIsProps {
 export function PlanKPIs({ plan, onPlanChange, isPresentation }: PlanKPIsProps) {
     
     const handleKPIChange = (index: number, field: keyof KPI, value: string) => {
-        const newKPIs = [...plan.kpis];
+        const newKPIs = [...(plan.kpis || [])];
         newKPIs[index] = { ...newKPIs[index], [field]: value };
         onPlanChange({ ...plan, kpis: newKPIs });
     };
 
     const addKPI = () => {
-        onPlanChange({ ...plan, kpis: [...plan.kpis, { name: 'Novo KPI', target: 'Definir meta' }] });
+        onPlanChange({ ...plan, kpis: [...(plan.kpis || []), { name: 'Novo KPI', target: 'Definir meta' }] });
     };
 
     const removeKPI = (index: number) => {
-        const newKPIs = plan.kpis.filter((_, i) => i !== index);
+        const newKPIs = (plan.kpis || []).filter((_, i) => i !== index);
         onPlanChange({ ...plan, kpis: newKPIs });
     };
 
@@ -38,7 +38,7 @@ export function PlanKPIs({ plan, onPlanChange, isPresentation }: PlanKPIsProps) 
             </CardHeader>
             <CardContent>
                 <div className="grid sm:grid-cols-2 gap-4">
-                    {plan.kpis.map((kpi, index) => (
+                    {(plan.kpis || []).map((kpi, index) => (
                         <div key={index} className="bg-muted/50 p-4 rounded-lg group relative">
                             <EditableField
                                 value={kpi.name}
@@ -47,7 +47,7 @@ export function PlanKPIs({ plan, onPlanChange, isPresentation }: PlanKPIsProps) 
                                 className="text-sm text-muted-foreground"
                             />
                             <EditableField
-                                value={kpi.target}
+                                value={kpi.target || 'Definir meta'}
                                 onSave={(value) => handleKPIChange(index, 'target', String(value))}
                                 isPresentation={isPresentation}
                                 className="text-xl font-bold mt-1"

@@ -8,13 +8,18 @@ interface PlanHeaderToolbarProps {
   onBack: () => void;
   isPresentation: boolean;
   setIsPresentation: (isPresentation: boolean) => void;
+  planId?: string;
 }
 
-export function PlanHeaderToolbar({ onBack, isPresentation, setIsPresentation }: PlanHeaderToolbarProps) {
+export function PlanHeaderToolbar({ onBack, isPresentation, setIsPresentation, planId }: PlanHeaderToolbarProps) {
   const { toast } = useToast();
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(window.location.href);
+    let link = window.location.href;
+    if (planId) {
+      link = `${window.location.origin}/view/${planId}`;
+    }
+    navigator.clipboard.writeText(link);
     toast({
       title: 'Link copiado!',
       description: 'O link para este planejamento foi copiado para a área de transferência.',
