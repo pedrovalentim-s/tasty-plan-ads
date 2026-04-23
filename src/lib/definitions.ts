@@ -7,6 +7,7 @@ export const FormDataSchema = z.object({
   monthlyBudget: z.coerce.number().min(1, 'Orçamento deve ser maior que 0.'),
   goals: z.string().min(1, 'Objetivos são obrigatórios.'),
   notes: z.string().optional(),
+  managerDirection: z.string().optional(),
   platforms: z.array(z.string()).min(1, 'Selecione pelo menos uma plataforma.'),
   briefingFile: z.any().optional(),
 });
@@ -41,6 +42,7 @@ export const GenerateStrategicPlanInputSchema = z.object({
   monthlyBudget: z.number().describe('Orçamento mensal em R$'),
   goals: z.string().describe('Objetivos principais do cliente'),
   notes: z.string().describe('Observações adicionais'),
+  managerDirection: z.string().optional().describe('Direcionamento prévio do gestor de tráfego'),
   platforms: z.array(z.string()).describe('Plataformas selecionadas (Meta, Google)'),
 });
 export type GenerateStrategicPlanInput = z.infer<typeof GenerateStrategicPlanInputSchema>;

@@ -113,7 +113,14 @@ export function PlanCampaigns({ plan, onPlanChange, isPresentation, openCampaign
                                 <div className="flex items-center gap-4 w-full">
                                     <div className="flex items-center gap-2 flex-1">
                                         <Badge variant={campaign.platform === 'Meta' ? 'default' : 'destructive'}>{campaign.platform}</Badge>
-                                        <Badge variant="secondary">{campaign.type}</Badge>
+                                        <EditableField
+                                            value={campaign.type}
+                                            onSave={(value) => handleFieldChange(`campaigns.${cIndex}.type`, value)}
+                                            isPresentation={isPresentation}
+                                            displayValue={<Badge variant="secondary" className="hover:bg-secondary/80">{campaign.type}</Badge>}
+                                            className="inline-flex m-0 p-0 hover:bg-transparent"
+                                            inputClassName="w-24 h-6 text-xs px-1 py-0 my-0 border-primary"
+                                        />
                                         <EditableField
                                             value={campaign.name}
                                             onSave={(value) => handleFieldChange(`campaigns.${cIndex}.name`, value)}

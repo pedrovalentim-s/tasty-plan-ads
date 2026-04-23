@@ -29,6 +29,7 @@ export function FormStep({ initialData, onSubmit, onFileParse }: FormStepProps) 
       segment: '',
       monthlyBudget: 1000,
       goals: '',
+      managerDirection: '',
       notes: '',
       platforms: ['Meta'],
       ...initialData,
@@ -48,6 +49,7 @@ export function FormStep({ initialData, onSubmit, onFileParse }: FormStepProps) 
         segment: parsedData.segment || form.getValues('segment'),
         monthlyBudget: parsedData.monthlyBudget || form.getValues('monthlyBudget'),
         goals: parsedData.goals || form.getValues('goals'),
+        managerDirection: form.getValues('managerDirection'),
         notes: parsedData.notes || form.getValues('notes'),
         platforms: parsedData.platforms?.length ? parsedData.platforms : form.getValues('platforms'),
       });
@@ -66,27 +68,27 @@ export function FormStep({ initialData, onSubmit, onFileParse }: FormStepProps) 
 
       <div className="border-2 border-dashed border-primary/30 rounded-xl p-8 mb-8 bg-primary/5">
         <div className="text-center">
-            <div className="flex justify-center items-center mb-4">
-                <div className="bg-primary/10 p-3 rounded-full">
-                    <Upload className="h-8 w-8 text-primary" />
-                </div>
+          <div className="flex justify-center items-center mb-4">
+            <div className="bg-primary/10 p-3 rounded-full">
+              <Upload className="h-8 w-8 text-primary" />
             </div>
-            <h2 className="text-xl font-semibold">Importar Briefing do Cliente</h2>
-            <p className="text-muted-foreground mt-1 mb-4">
-                Envie um arquivo .docx, .txt ou .json e os campos serão preenchidos automaticamente
-            </p>
-            <Button variant="outline" className="w-full max-w-xs mx-auto" disabled={isParsing} onClick={() => document.getElementById('briefing-file-input')?.click()}>
-                <FileText className="mr-2" />
-                {isParsing ? 'Processando...' : 'Selecionar Arquivo'}
-            </Button>
-            <input
-              type="file"
-              id="briefing-file-input"
-              className="hidden"
-              accept=".docx,.txt,.json"
-              onChange={handleFileChange}
-              disabled={isParsing}
-            />
+          </div>
+          <h2 className="text-xl font-semibold">Importar Briefing do Cliente</h2>
+          <p className="text-muted-foreground mt-1 mb-4">
+            Envie um arquivo .docx, .txt ou .json e os campos serão preenchidos automaticamente
+          </p>
+          <Button variant="outline" className="w-full max-w-xs mx-auto" disabled={isParsing} onClick={() => document.getElementById('briefing-file-input')?.click()}>
+            <FileText className="mr-2" />
+            {isParsing ? 'Processando...' : 'Selecionar Arquivo'}
+          </Button>
+          <input
+            type="file"
+            id="briefing-file-input"
+            className="hidden"
+            accept=".docx,.txt,.json"
+            onChange={handleFileChange}
+            disabled={isParsing}
+          />
         </div>
       </div>
 
@@ -103,7 +105,7 @@ export function FormStep({ initialData, onSubmit, onFileParse }: FormStepProps) 
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          
+
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-3">
@@ -151,62 +153,62 @@ export function FormStep({ initialData, onSubmit, onFileParse }: FormStepProps) 
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-               <FormField
-                  control={form.control}
-                  name="monthlyBudget"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Orçamento mensal total (R$) *</FormLabel>
-                      <FormControl>
-                        <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : Number(e.target.value))} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="platforms"
-                  render={() => (
-                    <FormItem>
-                      <FormLabel>Plataformas *</FormLabel>
-                      <FormDescription>Selecione onde as campanhas serão veiculadas.</FormDescription>
-                      <div className="flex items-center space-x-6 pt-2">
-                        {['Meta', 'Google'].map((item) => (
-                           <FormField
-                           key={item}
-                           control={form.control}
-                           name="platforms"
-                           render={({ field }) => (
-                             <FormItem
-                               key={item}
-                               className="flex flex-row items-center space-x-3 space-y-0"
-                             >
-                               <FormControl>
-                                 <Checkbox
-                                   checked={field.value?.includes(item)}
-                                   onCheckedChange={(checked) => {
-                                     const newValue = checked
-                                       ? [...(field.value || []), item]
-                                       : (field.value || []).filter(
-                                           (value) => value !== item
-                                         );
-                                     field.onChange(newValue);
-                                   }}
-                                 />
-                               </FormControl>
-                               <FormLabel className="font-normal">
-                                 {item}
-                               </FormLabel>
-                             </FormItem>
-                           )}
-                         />
-                        ))}
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              <FormField
+                control={form.control}
+                name="monthlyBudget"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Orçamento mensal total (R$) *</FormLabel>
+                    <FormControl>
+                      <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : Number(e.target.value))} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="platforms"
+                render={() => (
+                  <FormItem>
+                    <FormLabel>Plataformas *</FormLabel>
+                    <FormDescription>Selecione onde as campanhas serão veiculadas.</FormDescription>
+                    <div className="flex items-center space-x-6 pt-2">
+                      {['Meta', 'Google'].map((item) => (
+                        <FormField
+                          key={item}
+                          control={form.control}
+                          name="platforms"
+                          render={({ field }) => (
+                            <FormItem
+                              key={item}
+                              className="flex flex-row items-center space-x-3 space-y-0"
+                            >
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value?.includes(item)}
+                                  onCheckedChange={(checked) => {
+                                    const newValue = checked
+                                      ? [...(field.value || []), item]
+                                      : (field.value || []).filter(
+                                        (value) => value !== item
+                                      );
+                                    field.onChange(newValue);
+                                  }}
+                                />
+                              </FormControl>
+                              <FormLabel className="font-normal">
+                                {item}
+                              </FormLabel>
+                            </FormItem>
+                          )}
+                        />
+                      ))}
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </CardContent>
           </Card>
 
@@ -218,6 +220,22 @@ export function FormStep({ initialData, onSubmit, onFileParse }: FormStepProps) 
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
+              <FormField
+                control={form.control}
+                name="managerDirection"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-primary font-semibold">Direcionamento Prévio do Gestor</FormLabel>
+                    <FormDescription>
+                      Descreva sua expertise empírica e o direcionamento estratégico que deve nortear o planejamento. Este campo orienta e tem prioridade máxima na geração da estratégia via IA.
+                    </FormDescription>
+                    <FormControl>
+                      <Textarea placeholder="Ex: Focar o orçamento inicial 70% na campanha de conversão para público quente usando ofertas de combos e os criativos X..." className="min-h-[100px]" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <FormField
                 control={form.control}
                 name="goals"
@@ -246,7 +264,7 @@ export function FormStep({ initialData, onSubmit, onFileParse }: FormStepProps) 
               />
             </CardContent>
           </Card>
-          
+
           <Button type="submit" className="w-full h-12 text-lg" disabled={form.formState.isSubmitting}>
             <Wand2 className="mr-2" />
             {form.formState.isSubmitting ? 'Gerando...' : 'Gerar Planejamento com IA'}

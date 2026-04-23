@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 
 interface EditableFieldProps {
   value: string | number;
-  displayValue?: string;
+  displayValue?: React.ReactNode;
   onSave: (value: string | number) => void;
   isPresentation: boolean;
   className?: string;
