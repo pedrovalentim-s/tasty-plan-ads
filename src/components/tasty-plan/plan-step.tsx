@@ -71,6 +71,7 @@ export function PlanStep({ plan: initialPlan, onPlanChange, onBack, forcePresent
           isPresentation={isPresentation}
           setIsPresentation={setIsPresentation}
           planId={plan.id}
+          plan={plan}
         />
       )}
       <main className="container mx-auto max-w-6xl mt-8 px-4">

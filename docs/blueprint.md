@@ -1,4 +1,4 @@
-# **App Name**: Tasty Plan - Gerador de Planejamento Estratégico de Tráfego
+# **App Name**: Tasty Ads - Gerador de Planejamento Estratégico de Tráfego
 
 ## Core Features:
 

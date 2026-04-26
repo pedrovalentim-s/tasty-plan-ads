@@ -55,7 +55,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
         className={`${isOpen ? 'w-64' : 'w-0 md:w-16'} transition-all duration-300 ease-in-out border-r bg-card flex flex-col shrink-0`}
       >
         <div className="flex items-center justify-between p-4 border-b h-16">
-          {isOpen && <span className="font-headline font-bold text-primary truncate">Tasty Plan</span>}
+          {isOpen && <span className="font-headline font-bold text-primary truncate">Tasty Ads</span>}
           <Button variant="ghost" size="icon" onClick={() => setIsOpen(!isOpen)} className="shrink-0">
             <Menu className="h-5 w-5" />
           </Button>

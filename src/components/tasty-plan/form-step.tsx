@@ -62,7 +62,7 @@ export function FormStep({ initialData, onSubmit, onFileParse }: FormStepProps) 
   return (
     <main className="container mx-auto max-w-3xl py-12 px-4">
       <div className="text-center mb-10">
-        <h1 className="font-headline text-5xl font-bold text-primary">Tasty Plan</h1>
+        <h1 className="font-headline text-5xl font-bold text-primary">Tasty Ads</h1>
         <p className="text-xl text-muted-foreground mt-2">Gere um planejamento estratégico de tráfego em minutos.</p>
       </div>
 
