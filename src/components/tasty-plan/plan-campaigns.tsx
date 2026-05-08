@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Bot, Trash2, PlusCircle, ChevronsUpDown } from 'lucide-react';
+import { Bot, Trash2, PlusCircle, ChevronsUpDown, Copy } from 'lucide-react';
 import { EditableField } from './editable-field';
 import { TagList } from './tag-list';
 import { formatCurrency } from '@/lib/formatters';
@@ -93,6 +93,31 @@ export function PlanCampaigns({ plan, onPlanChange, isPresentation, openCampaign
         onPlanChange(newPlan);
     };
 
+    const duplicateCampaign = (campaignIndex: number) => {
+        const campaignToDuplicate = plan.campaigns[campaignIndex];
+        const newCampaign: Campaign = {
+            ...campaignToDuplicate,
+            id: crypto.randomUUID(),
+            name: `Cópia de ${campaignToDuplicate.name}`,
+            adSets: campaignToDuplicate.adSets.map(as => ({ ...as, id: crypto.randomUUID() }))
+        };
+        const newPlan = { ...plan, campaigns: [...plan.campaigns, newCampaign] };
+        onPlanChange(newPlan);
+        setOpenCampaigns([...openCampaigns, newCampaign.id]);
+    };
+
+    const duplicateAdSet = (campaignIndex: number, adSetIndex: number) => {
+        const adSetToDuplicate = plan.campaigns[campaignIndex].adSets[adSetIndex];
+        const newAdSet: AdSet = {
+            ...adSetToDuplicate,
+            id: crypto.randomUUID(),
+            name: `Cópia de ${adSetToDuplicate.name}`
+        };
+        const newPlan = JSON.parse(JSON.stringify(plan));
+        newPlan.campaigns[campaignIndex].adSets.push(newAdSet);
+        onPlanChange(newPlan);
+    };
+
     return (
         <section className="mt-8">
             <div className="flex justify-between items-center mb-4">
@@ -149,13 +174,25 @@ export function PlanCampaigns({ plan, onPlanChange, isPresentation, openCampaign
                                         />
                                     </div>
                                     {!isPresentation && (
-                                        <div
-                                            role="button"
-                                            aria-label="Remove campaign"
-                                            onClick={(e) => { e.stopPropagation(); removeCampaign(campaign.id); }}
-                                            className="p-2 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                                        >
-                                            <Trash2 size={18} />
+                                        <div className="flex gap-1">
+                                            <div
+                                                role="button"
+                                                aria-label="Duplicate campaign"
+                                                onClick={(e) => { e.stopPropagation(); duplicateCampaign(cIndex); }}
+                                                className="p-2 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10"
+                                                title="Duplicar Campanha"
+                                            >
+                                                <Copy size={18} />
+                                            </div>
+                                            <div
+                                                role="button"
+                                                aria-label="Remove campaign"
+                                                onClick={(e) => { e.stopPropagation(); removeCampaign(campaign.id); }}
+                                                className="p-2 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                                title="Remover Campanha"
+                                            >
+                                                <Trash2 size={18} />
+                                            </div>
                                         </div>
                                     )}
                                 </div>
@@ -173,9 +210,14 @@ export function PlanCampaigns({ plan, onPlanChange, isPresentation, openCampaign
                                                         className="font-bold text-md"
                                                     />
                                                     {!isPresentation && (
-                                                        <Button variant="ghost" size="icon" className="h-8 w-8 -mt-2 -mr-2" onClick={() => removeAdSet(cIndex, adSet.id)}>
-                                                            <Trash2 size={16} className="text-muted-foreground" />
-                                                        </Button>
+                                                        <div className="flex gap-2">
+                                                            <Button variant="ghost" size="icon" className="h-8 w-8 -mt-2" onClick={() => duplicateAdSet(cIndex, asIndex)} title="Duplicar Conjunto">
+                                                                <Copy size={16} className="text-muted-foreground" />
+                                                            </Button>
+                                                            <Button variant="ghost" size="icon" className="h-8 w-8 -mt-2 -mr-2" onClick={() => removeAdSet(cIndex, adSet.id)} title="Remover Conjunto">
+                                                                <Trash2 size={16} className="text-muted-foreground" />
+                                                            </Button>
+                                                        </div>
                                                     )}
                                                 </div>
                                                 <div className="grid md:grid-cols-3 gap-6 text-sm">
