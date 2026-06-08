@@ -15,17 +15,17 @@ interface PlanNotesProps {
 export function PlanNotes({ plan, onPlanChange, isPresentation }: PlanNotesProps) {
     
     const handleNoteChange = (index: number, value: string) => {
-        const newNotes = [...plan.strategy_notes];
+        const newNotes = [...(plan.strategy_notes || [])];
         newNotes[index] = value;
         onPlanChange({ ...plan, strategy_notes: newNotes });
     };
 
     const addNote = () => {
-        onPlanChange({ ...plan, strategy_notes: [...plan.strategy_notes, 'Nova nota estratégica'] });
+        onPlanChange({ ...plan, strategy_notes: [...(plan.strategy_notes || []), 'Nova nota estratégica'] });
     };
 
     const removeNote = (index: number) => {
-        const newNotes = plan.strategy_notes.filter((_, i) => i !== index);
+        const newNotes = (plan.strategy_notes || []).filter((_, i) => i !== index);
         onPlanChange({ ...plan, strategy_notes: newNotes });
     };
 
@@ -38,7 +38,7 @@ export function PlanNotes({ plan, onPlanChange, isPresentation }: PlanNotesProps
             </CardHeader>
             <CardContent>
                 <ul className="space-y-4">
-                    {plan.strategy_notes.map((note, index) => (
+                    {(plan.strategy_notes || []).map((note, index) => (
                         <li key={index} className="flex items-start gap-3 group">
                             <span className="text-primary font-bold mt-1">→</span>
                             <div className="flex-1">

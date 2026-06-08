@@ -24,7 +24,7 @@ export function PlanSummary({ summary, campaigns, onRecalculate, onFieldChange, 
               <RefreshCw size={12} className="mr-1"/> Recalcular das campanhas
           </Button>
         )},
-        { icon: TrendingUp, title: "Verba Diária", value: summary.dailyBudget, field: "summary.dailyBudget", format: (v) => `${formatCurrency(v)}`, extra: "Calculado de mensal/30" },
+        { icon: TrendingUp, title: "Verba Diária", value: summary.dailyBudget, field: "summary.dailyBudget", format: (v: number) => `${formatCurrency(v)}`, extra: "Calculado de mensal/30" },
         { icon: Megaphone, title: "Campanhas", value: campaigns.length, field: null },
         { icon: Users, title: "Conjuntos de Anúncios", value: totalAdSets, field: null },
     ];
@@ -41,7 +41,7 @@ export function PlanSummary({ summary, campaigns, onRecalculate, onFieldChange, 
                         {item.field ? (
                             <EditableField
                                 value={item.value}
-                                displayValue={item.format && typeof item.value === 'number' ? item.format(item.value) : undefined}
+                                displayValue={typeof item.format === 'function' && typeof item.value === 'number' ? item.format(item.value) : undefined}
                                 onSave={(value) => onFieldChange(item.field!, value)}
                                 isPresentation={isPresentation}
                                 type="number"

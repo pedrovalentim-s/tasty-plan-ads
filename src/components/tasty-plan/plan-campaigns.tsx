@@ -60,13 +60,13 @@ export function PlanCampaigns({ plan, onPlanChange, isPresentation, openCampaign
             monthlyBudget: 300,
             adSets: [],
         };
-        const newPlan = { ...plan, campaigns: [...plan.campaigns, newCampaign] };
+        const newPlan = { ...plan, campaigns: [...(plan.campaigns || []), newCampaign] };
         onPlanChange(newPlan);
         setOpenCampaigns([...openCampaigns, newCampaign.id]);
     };
     
     const removeCampaign = (campaignId: string) => {
-        const newPlan = { ...plan, campaigns: plan.campaigns.filter(c => c.id !== campaignId) };
+        const newPlan = { ...plan, campaigns: (plan.campaigns || []).filter(c => c.id !== campaignId) };
         onPlanChange(newPlan);
     };
 
@@ -94,20 +94,20 @@ export function PlanCampaigns({ plan, onPlanChange, isPresentation, openCampaign
     };
 
     const duplicateCampaign = (campaignIndex: number) => {
-        const campaignToDuplicate = plan.campaigns[campaignIndex];
+        const campaignToDuplicate = (plan.campaigns || [])[campaignIndex];
         const newCampaign: Campaign = {
             ...campaignToDuplicate,
             id: crypto.randomUUID(),
             name: `Cópia de ${campaignToDuplicate.name}`,
             adSets: campaignToDuplicate.adSets.map(as => ({ ...as, id: crypto.randomUUID() }))
         };
-        const newPlan = { ...plan, campaigns: [...plan.campaigns, newCampaign] };
+        const newPlan = { ...plan, campaigns: [...(plan.campaigns || []), newCampaign] };
         onPlanChange(newPlan);
         setOpenCampaigns([...openCampaigns, newCampaign.id]);
     };
 
     const duplicateAdSet = (campaignIndex: number, adSetIndex: number) => {
-        const adSetToDuplicate = plan.campaigns[campaignIndex].adSets[adSetIndex];
+        const adSetToDuplicate = (plan.campaigns || [])[campaignIndex].adSets[adSetIndex];
         const newAdSet: AdSet = {
             ...adSetToDuplicate,
             id: crypto.randomUUID(),
@@ -131,7 +131,7 @@ export function PlanCampaigns({ plan, onPlanChange, isPresentation, openCampaign
             </div>
 
             <Accordion type="multiple" value={openCampaigns} onValueChange={setOpenCampaigns} className="space-y-4">
-                {plan.campaigns.map((campaign, cIndex) => (
+                {(plan.campaigns || []).map((campaign, cIndex) => (
                     <AccordionItem key={campaign.id} value={campaign.id} className="border-none">
                         <Card className="overflow-hidden">
                             <AccordionTrigger className="p-4 hover:no-underline data-[state=open]:bg-muted/50 transition-colors">
@@ -235,21 +235,21 @@ export function PlanCampaigns({ plan, onPlanChange, isPresentation, openCampaign
                                                     </div>
                                                     <div>
                                                         <h4 className="font-semibold mb-2">Posicionamentos</h4>
-                                                        <TagList tags={adSet.placements} onTagsChange={(tags) => handleFieldChange(`campaigns.${cIndex}.adSets.${asIndex}.placements`, tags)} isPresentation={isPresentation} />
+                                                        <TagList tags={adSet.placements || []} onTagsChange={(tags) => handleFieldChange(`campaigns.${cIndex}.adSets.${asIndex}.placements`, tags)} isPresentation={isPresentation} />
                                                     </div>
                                                     <div>
                                                         <h4 className="font-semibold mb-2">CTA</h4>
-                                                        <EditableField value={adSet.cta} onSave={(v) => handleFieldChange(`campaigns.${cIndex}.adSets.${asIndex}.cta`, v)} isPresentation={isPresentation} />
+                                                        <EditableField value={adSet.cta || ''} onSave={(v) => handleFieldChange(`campaigns.${cIndex}.adSets.${asIndex}.cta`, v)} isPresentation={isPresentation} />
                                                     </div>
                                                     <div>
-                                                        <h4 className="font-semibold mb-2">Criativos ({adSet.creatives.format})</h4>
-                                                        <TagList title="Sugestões" tags={adSet.creatives.suggestions} onTagsChange={(tags) => handleFieldChange(`campaigns.${cIndex}.adSets.${asIndex}.creatives.suggestions`, tags)} isPresentation={isPresentation} variant="vertical" />
+                                                        <h4 className="font-semibold mb-2">Criativos ({adSet.creatives?.format || 'Imagem/Vídeo'})</h4>
+                                                        <TagList title="Sugestões" tags={adSet.creatives?.suggestions || []} onTagsChange={(tags) => handleFieldChange(`campaigns.${cIndex}.adSets.${asIndex}.creatives.suggestions`, tags)} isPresentation={isPresentation} variant="vertical" />
                                                     </div>
                                                 </div>
                                                 <Separator className="my-4" />
                                                 <div>
                                                     <h4 className="font-semibold mb-2">Interesses</h4>
-                                                    <TagList tags={adSet.audience.interests} onTagsChange={(tags) => handleFieldChange(`campaigns.${cIndex}.adSets.${asIndex}.audience.interests`, tags)} isPresentation={isPresentation} />
+                                                    <TagList tags={adSet.audience.interests || []} onTagsChange={(tags) => handleFieldChange(`campaigns.${cIndex}.adSets.${asIndex}.audience.interests`, tags)} isPresentation={isPresentation} />
                                                 </div>
                                             </CardContent>
                                         </Card>
