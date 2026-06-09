@@ -33,7 +33,7 @@ const generateStrategicPlanPrompt = ai.definePrompt({
     schema: GeneratePlanPromptInputSchema
   },
   output: { schema: PlanSchema },
-  model: 'googleai/gemini-2.5-pro',
+  model: 'googleai/gemini-2.5-flash',
   config: {
     temperature: 0.8,
     maxOutputTokens: 8000,
