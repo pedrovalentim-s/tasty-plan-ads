@@ -1,115 +1,164 @@
 'use server';
 
-import {ai} from '@/ai/genkit';
-import {z} from 'zod';
 import * as fs from 'fs';
 import * as path from 'path';
-import { 
+import { claude, CLAUDE_MODEL, FALLBACK_MODEL, CLAUDE_BETAS, extractJson } from '@/ai/claude';
+import {
   GenerateStrategicPlanInputSchema,
   type GenerateStrategicPlanInput,
   PlanSchema,
   type GenerateStrategicPlanOutput,
 } from '@/lib/definitions';
 
+/**
+ * System prompt em duas partes para aproveitar prompt caching:
+ * a persona + cérebro estratégico são estáveis (cacheados entre gerações);
+ * os dados do cliente entram na mensagem do usuário, que varia.
+ */
+function buildSystemBlocks(strategyBrain: string) {
+  return [
+    {
+      type: 'text' as const,
+      text: `Você é um estrategista sênior de mídia digital especializado em restaurantes e gastronomia, responsável pelo planejamento de campanhas de tráfego pago da agência Tasty Media.
 
-// Helper type for the prompt input, including calculated dailyBudget and joined platforms
-const GeneratePlanPromptInputSchema = z.object({
-  clientName: z.string(),
-  segment: z.string(),
-  monthlyBudget: z.number(),
-  dailyBudget: z.number(), // Calculated daily budget
-  goals: z.string(),
-  platforms: z.string(), // Joined platforms string
-  notes: z.string(),
-  managerDirection: z.string(), // Added manager direction
-  strategyBrain: z.string(), // Added strategy brain
-});
-type GeneratePlanPromptInput = z.infer<typeof GeneratePlanPromptInputSchema>;
+Seu trabalho é criar planos de campanhas completos, profundos e acionáveis — o nível de detalhe e insight que um especialista com anos de mercado entregaria. O plano será usado pelo gestor de tráfego para montar as campanhas reais e será apresentado ao cliente.
 
+CÉREBRO ESTRATÉGICO DA AGÊNCIA (siga estritamente estas diretrizes):
+${strategyBrain}
 
-const generateStrategicPlanPrompt = ai.definePrompt({
-  name: 'generateStrategicPlanPrompt',
-  input: {
-    schema: GeneratePlanPromptInputSchema
+REGRAS DO PLANO:
+- Sempre gere as seções "campaigns", "strategy_notes" e "kpis".
+- Gere a quantidade ideal de campanhas por plataforma com base nos objetivos e orçamento (sinta-se livre para criar 3, 4 ou mais campanhas cobrindo todo o funil).
+- Cada campanha deve ter 2-3 ad sets diferentes, com todos os campos preenchidos (placements, schedule, cta, creatives, link).
+- Distribua o orçamento de forma estratégica entre as campanhas (a soma deve respeitar o orçamento do cliente).
+- Cada ad set deve ter 3+ interesses no público.
+- CTAs relevantes para restaurantes (Reservar, Conhecer, Pedir agora, etc).
+- Sugestões de criativo específicas e acionáveis, não genéricas.
+- Strategy notes devem ser dicas práticas de implementação e otimização.
+- KPIs devem ser SMART e mensuráveis, coerentes com o orçamento.
+- IDs podem ser strings curtas únicas (ex: "camp-1", "adset-1a").
+
+FORMATO DA RESPOSTA — responda APENAS com JSON válido nesta estrutura exata, sem markdown e sem delimitadores:
+{
+  "id": "id-do-plano",
+  "summary": {
+    "clientName": "...", "segment": "...", "monthlyBudget": 5000, "dailyBudget": 166.67,
+    "platforms": ["Meta"], "period": "30 dias", "mainObjective": "resumo em 1-2 linhas"
   },
-  output: { schema: PlanSchema },
-  model: 'googleai/gemini-2.5-flash',
-  config: {
-    temperature: 0.8,
-    maxOutputTokens: 8000,
-  },
-  prompt: `Você é um especialista em planejamento estratégico de mídia digital para restaurantes. Crie um plano completo e profissional.\n\nDADOS DO CLIENTE:\n- Nome: {{{clientName}}}\n- Segmento: {{{segment}}}\n- Orçamento Mensal: R$ {{{monthlyBudget}}}\n- Objetivos: {{{goals}}}\n- Plataformas: {{{platforms}}}\n- Notas: {{{notes}}}\n\nDIRECIONAMENTO PRÉVIO DO GESTOR DE TRÁFEGO (MUITO IMPORTANTE):\n{{{managerDirection}}}\nEste direcionamento carrega toda a expertise empírica do gestor e deve ter prioridade máxima e guiar todas as decisões da estratégia. Considere ele MAIS IMPORTANTE que os objetivos e notas ao estruturar as campanhas.\n\nCÉREBRO ESTRATÉGICO (DIRETRIZES DA AGÊNCIA):\nSiga estritamente as regras e comportamentos documentados abaixo para criar seu planejamento de campanhas:\n{{{strategyBrain}}}\n\nGERE um plano JSON estruturado com:\n\n{\n  "id": "uuid-ou-random-id-para-o-plano",\n  "summary": {\n    "clientName": "{{{clientName}}}",\n    "segment": "{{{segment}}}",\n    "monthlyBudget": {{{monthlyBudget}}},\n    "dailyBudget": {{{dailyBudget}}},\n    "platforms": [{{{platforms}}}],\n    "period": "30 dias",\n    "mainObjective": "resumo do objetivo principal em 1-2 linhas"\n  },\n  "campaigns": [\n    {\n      "id": "uuid-ou-random-id",\n      "platform": "Meta" ou "Google",\n      "type": "Tráfego",\n      "objective": "objetivo específico da campanha",\n      "name": "nome descritivo da campanha",\n      "dailyBudget": número (R$),\n      "monthlyBudget": número (R$),\n      "adSets": [\n        {\n          "id": "uuid-ou-random-id",\n          "name": "nome do ad set",\n          "objective": "objetivo do ad set",\n          "audience": {\n            "type": "tipo de público",\n            "description": "descrição do público-alvo",\n            "location": "localização geográfica",\n            "interests": ["interesse1", "interesse2", "interesse3"],\n            "exclusions": "exclusões demográficas se houver"\n          },\n          "placements": ["Feed", "Stories", "Reels"],\n          "schedule": "Contínuo" ou "datas específicas",\n          "cta": "call-to-action (ex: 'Faça uma Reserva')",\n          "link": "URL de destino se houver",\n          "creatives": {\n            "format": "Imagem" ou "Vídeo" ou "Carrossel",\n            "suggestions": ["sugestão1", "sugestão2", "sugestão3"]\n          }\n        }\n      ]\n    }\n  ],\n  "strategy_notes": [\n    "nota estratégica 1",\n    "nota estratégica 2",\n    "nota estratégica 3"\n  ],\n  "kpis": [\n    {\n      "name": "nome do KPI",\n      "target": "meta específica (ex: '5000 cliques')"\n    },\n    {\n      "name": "outro KPI",\n      "target": "meta específica"\n    }\n  ],\n  "createdAt": "YYYY-MM-DDTHH:mm:ssZ",\n  "updatedAt": "YYYY-MM-DDTHH:mm:ssZ"\n}\n\nREGRAS:\n- Sempre gere as seções "campaigns", "strategy_notes", e "kpis".\n- Gere a quantidade ideal de campanhas por plataforma baseada nos objetivos e no orçamento do cliente (goste de explorar e sinta-se livre para criar 3, 4 ou mais campanhas que cubram todo o funil do cliente).\n- Cada campanha deve ter 2-3 ad sets diferentes.\n- Garanta que todos os campos para cada 'adSet' (como 'placements', 'schedule', 'cta', 'creatives', e 'link') sejam sempre preenchidos.\n- Distribua orçamento de forma estratégica entre campanhas.\n- Cada ad set deve ter 3+ interesses.\n- CTA deve ser relevante para restaurante (Reservar, Conhecer, etc).\n- Suggestions de criativo devem ser específicas e acionáveis.\n- Strategy notes devem ser dicas práticas de implementação.\n- KPIs devem ser SMART e mensuráveis.\n- Seja extremamente detalhado e aprofundado em suas sugestões, como um especialista sênior faria. Gere uma estratégia rica e com insights valiosos.\n- Retorne APENAS JSON válido, sem markdown.`
-});
-
-const generateStrategicPlanFlow = ai.defineFlow(
-  {
-    name: 'generateStrategicPlanFlow',
-    inputSchema: GenerateStrategicPlanInputSchema,
-    outputSchema: PlanSchema,
-  },
-  async (input) => {
-    const monthlyBudgetNum = input.monthlyBudget;
-    const dailyBudget = monthlyBudgetNum / 30;
-    const platformsString = input.platforms.map(p => `"${p}"`).join(', ');
-
-    let strategyBrainContent = '';
-    try {
-      const brainPath = path.join(process.cwd(), 'src/ai/knowledge/strategy-brain.md');
-      strategyBrainContent = fs.readFileSync(brainPath, 'utf-8');
-    } catch (error) {
-       console.warn('Cérebro Estratégico não encontrado. Certificando que o arquivo src/ai/knowledge/strategy-brain.md existe.');
-    }
-
-    const promptInput: GeneratePlanPromptInput = {
-      clientName: input.clientName,
-      segment: input.segment,
-      monthlyBudget: monthlyBudgetNum,
-      dailyBudget: dailyBudget,
-      goals: input.goals,
-      platforms: platformsString,
-      notes: input.notes,
-      managerDirection: input.managerDirection || 'Sem direcionamento prévio do gestor.',
-      strategyBrain: strategyBrainContent,
-    };
-
-    const { output } = await generateStrategicPlanPrompt(promptInput);
-
-    if (!output) {
-      throw new Error('A IA não retornou uma resposta para o plano.');
-    }
-
-    const now = new Date().toISOString();
-
-    const processedCampaigns = (output.campaigns || []).map(campaign => ({
-      ...campaign,
-      adSets: (campaign.adSets || []).map(adSet => ({
-        ...adSet,
-        placements: adSet.placements || [],
-        schedule: adSet.schedule || 'Contínuo',
-        cta: adSet.cta || 'Saiba Mais',
-        link: adSet.link || '',
-        creatives: adSet.creatives || { format: 'Imagem/Vídeo', suggestions: [] },
-        audience: {
-          ...adSet.audience,
-          interests: adSet.audience.interests || [],
-          exclusions: adSet.audience.exclusions || '',
+  "campaigns": [
+    {
+      "id": "camp-1", "platform": "Meta", "type": "Tráfego",
+      "objective": "objetivo da campanha", "name": "nome da campanha",
+      "dailyBudget": 50, "monthlyBudget": 1500,
+      "adSets": [
+        {
+          "id": "adset-1a", "name": "nome do ad set", "objective": "objetivo",
+          "audience": {
+            "type": "tipo de público", "description": "descrição",
+            "location": "localização", "interests": ["i1", "i2", "i3"], "exclusions": ""
+          },
+          "placements": ["Feed", "Stories", "Reels"], "schedule": "Contínuo",
+          "cta": "Reservar", "link": "",
+          "creatives": { "format": "Imagem", "suggestions": ["s1", "s2", "s3"] }
         }
-      }))
-    }));
+      ]
+    }
+  ],
+  "strategy_notes": ["nota 1", "nota 2", "nota 3"],
+  "kpis": [{ "name": "nome do KPI", "target": "meta específica" }],
+  "createdAt": "", "updatedAt": ""
+}`,
+      cache_control: { type: 'ephemeral' as const },
+    },
+  ];
+}
 
-    // Ensure fields are set, as the prompt might not strictly follow the format for these.
-    return {
-      ...output,
-      id: output.id || crypto.randomUUID(),
-      campaigns: processedCampaigns,
-      strategy_notes: output.strategy_notes || [],
-      kpis: output.kpis || [],
-      createdAt: output.createdAt || now,
-      updatedAt: output.updatedAt || now,
-    };
+export async function generateStrategicPlan(
+  input: GenerateStrategicPlanInput
+): Promise<GenerateStrategicPlanOutput> {
+  const parsed = GenerateStrategicPlanInputSchema.parse(input);
+  const dailyBudget = parsed.monthlyBudget / 30;
+
+  let strategyBrain = '';
+  try {
+    const brainPath = path.join(process.cwd(), 'src/ai/knowledge/strategy-brain.md');
+    strategyBrain = fs.readFileSync(brainPath, 'utf-8');
+  } catch {
+    console.warn('Cérebro Estratégico não encontrado em src/ai/knowledge/strategy-brain.md.');
   }
-);
 
-export async function generateStrategicPlan(input: GenerateStrategicPlanInput): Promise<GenerateStrategicPlanOutput> {
-  return generateStrategicPlanFlow(input);
+  const userMessage = `Crie o planejamento estratégico de tráfego para o cliente abaixo.
+
+DADOS DO CLIENTE:
+- Nome: ${parsed.clientName}
+- Segmento: ${parsed.segment}
+- Orçamento Mensal: R$ ${parsed.monthlyBudget} (diário: R$ ${dailyBudget.toFixed(2)})
+- Objetivos: ${parsed.goals}
+- Plataformas: ${parsed.platforms.join(', ')}
+- Notas: ${parsed.notes || 'Sem notas adicionais.'}
+
+DIRECIONAMENTO PRÉVIO DO GESTOR DE TRÁFEGO (PRIORIDADE MÁXIMA):
+${parsed.managerDirection || 'Sem direcionamento prévio do gestor.'}
+Este direcionamento carrega a expertise empírica do gestor e deve guiar todas as decisões da estratégia — considere-o MAIS IMPORTANTE que os objetivos e notas ao estruturar as campanhas.`;
+
+  // Streaming: saídas longas (plano completo + raciocínio) excedem o limite
+  // de requisições não-streamadas do SDK.
+  const stream = claude.beta.messages.stream({
+    model: CLAUDE_MODEL,
+    max_tokens: 32000,
+    betas: CLAUDE_BETAS,
+    fallbacks: [{ model: FALLBACK_MODEL }],
+    output_config: {
+      // 'medium' no Fable 5 ainda supera modelos anteriores em esforço máximo,
+      // com ~30-40% menos tokens de raciocínio. Suba para 'high' se quiser o
+      // rigor máximo em um caso específico.
+      effort: 'medium',
+    },
+    system: buildSystemBlocks(strategyBrain),
+    messages: [{ role: 'user', content: userMessage }],
+  });
+  const response = await stream.finalMessage();
+
+  if (response.stop_reason === 'refusal') {
+    throw new Error('A IA não pôde gerar este planejamento. Tente novamente.');
+  }
+  if (response.stop_reason === 'max_tokens') {
+    throw new Error('O planejamento ficou longo demais e foi truncado. Tente novamente.');
+  }
+
+  const textBlock = response.content.find((b) => b.type === 'text');
+  if (!textBlock || textBlock.type !== 'text') {
+    throw new Error('A IA não retornou uma resposta para o plano.');
+  }
+
+  const output = PlanSchema.parse(extractJson(textBlock.text));
+  const now = new Date().toISOString();
+
+  // Defaults defensivos (mesmo pós-processamento da versão anterior)
+  const processedCampaigns = (output.campaigns || []).map((campaign) => ({
+    ...campaign,
+    adSets: (campaign.adSets || []).map((adSet) => ({
+      ...adSet,
+      placements: adSet.placements || [],
+      schedule: adSet.schedule || 'Contínuo',
+      cta: adSet.cta || 'Saiba Mais',
+      link: adSet.link || '',
+      creatives: adSet.creatives || { format: 'Imagem/Vídeo', suggestions: [] },
+      audience: {
+        ...adSet.audience,
+        interests: adSet.audience.interests || [],
+        exclusions: adSet.audience.exclusions || '',
+      },
+    })),
+  }));
+
+  return {
+    ...output,
+    id: output.id || crypto.randomUUID(),
+    campaigns: processedCampaigns,
+    strategy_notes: output.strategy_notes || [],
+    kpis: output.kpis || [],
+    createdAt: output.createdAt || now,
+    updatedAt: output.updatedAt || now,
+  };
 }
