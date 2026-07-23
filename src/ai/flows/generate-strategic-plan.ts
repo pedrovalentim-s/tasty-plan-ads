@@ -109,7 +109,10 @@ Este direcionamento carrega a expertise empírica do gestor e deve guiar todas a
     betas: CLAUDE_BETAS,
     fallbacks: [{ model: FALLBACK_MODEL }],
     output_config: {
-      effort: 'high',
+      // 'medium' no Fable 5 ainda supera modelos anteriores em esforço máximo,
+      // com ~30-40% menos tokens de raciocínio. Suba para 'high' se quiser o
+      // rigor máximo em um caso específico.
+      effort: 'medium',
     },
     system: buildSystemBlocks(strategyBrain),
     messages: [{ role: 'user', content: userMessage }],
